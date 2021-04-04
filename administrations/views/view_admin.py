@@ -6,7 +6,6 @@ from django import template
 import simplejson as json
 from datetime import datetime as dt_class
 from rest_framework.decorators import api_view
-from django.contrib.auth.models import User
 from apiHelper.apiHelper import ApiHelper
 from django.utils import timezone
 from rest_framework.decorators import authentication_classes, permission_classes, api_view
