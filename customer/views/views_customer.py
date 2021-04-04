@@ -82,7 +82,7 @@ def getUser(request):
      
         if (not r.text.isnumeric()): return ApiHelper.Response_ok(r.json()['message'])
         
-        query = User.objects.filter(is_deleted=False, phone_number=r.text).values(
+        query = Users.objects.filter(is_deleted=False, phone_number=r.text).values(
             'phone_number',
             'email',
             'first_name',
@@ -121,7 +121,7 @@ def updateUser(request):
         if (not r.text.isnumeric()): return ApiHelper.Response_ok(r.json()['message'])
 
         try:
-            user_update = User.objects.filter(is_deleted=False, phone_number=r.text).first()
+            user_update = Users.objects.filter(is_deleted=False, phone_number=r.text).first()
             user_update.first_name = first_name
             user_update.last_name = last_name
             user_update.female = female
@@ -155,7 +155,7 @@ def updatePassword(request):
         if (not r.text.isnumeric()): return ApiHelper.Response_ok(r.json()['message'])
 
         password = form['password']
-        user_delete = User.objects.filter(is_deleted=False, phone_number=r.text).first()
+        user_delete = Users.objects.filter(is_deleted=False, phone_number=r.text).first()
         user_delete.password = password
         user_delete.save()
 

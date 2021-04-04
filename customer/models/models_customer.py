@@ -1,7 +1,7 @@
 from django.db import models
 from django.utils import timezone as tz
 
-class User(models.Model):
+class Users(models.Model):
     phone_number = models.CharField(max_length=15, primary_key=True)
     email = models.TextField(null=True, blank=True, unique=True)
     password = models.TextField()
