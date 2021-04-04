@@ -106,7 +106,6 @@ def updateUser(request):
         first_name = form['first_name']
         last_name = form['last_name'] 
         female = form['female'] if 'female' in form else None
-        phone_number = form['phone_number']
         email = form['email']
         password = form['password']
         date_of_birth = dt_class.strptime(form['date_of_birth'], '%Y-%m-%d') if 'date_of_birth' in form else None
@@ -125,15 +124,14 @@ def updateUser(request):
             user_update.first_name = first_name
             user_update.last_name = last_name
             user_update.female = female
-            user_update.phone_number = phone_number
             user_update.email = email
             user_update.password = password
             user_update.date_of_birth = date_of_birth
             user_update.address = address
  
             user_update.save()
-        except:
-            return ApiHelper.Response_client_error("Sai kiểu dữ liệu")
+        except Exception as e:
+            return ApiHelper.Response_client_error(e)
 
         return ApiHelper.Response_ok("Success")
     except Exception as e:
