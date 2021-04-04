@@ -84,7 +84,6 @@ def getUser(request):
         if (not r.text.isnumeric()): return ApiHelper.Response_ok(r.json()['message'])
         
         query = User.objects.filter(is_deleted=False, phone_number=r.text).values(
-            'id',
             'phone_number',
             'email',
             'first_name',
