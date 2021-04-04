@@ -29,7 +29,7 @@ SECRET_KEY = 'qg!%r(rxdxv3lkv2#_x_*hzv_69dc9-)-#iex_10v+uqom^yx%'
 
 # SECURITY WARNING: don't run with debug turned on in production!
 # DEBUG = os.environ.get('DJANGO_DEBUG', '') != 'False'
-DEBUG = False
+DEBUG = True
 ALLOWED_HOSTS = [
     '.herokuapp.com',
     "waybox-backend.herokuapp.com", 
