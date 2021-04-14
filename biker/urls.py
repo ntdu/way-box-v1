@@ -16,5 +16,5 @@ urlpatterns = [
 
   path('create-biker-log', views.createBikerLog , name='createBikerLog'),
   path('get-detail-biker-log', views.getDetailBikerLog , name='getDetailBikerLog'),
-  path('get-report-biker-log-by-month', views.getReportBikerLogByMonth , name='getReportBikerLogByMonth'),
+  path('get-report-biker-log', views.getReportBikerLog , name='getReportBikerLog'),
 ]
