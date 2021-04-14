@@ -13,4 +13,8 @@ urlpatterns = [
   path('create-vehicle', views.createVehicle , name='createVehicle'),
   path('update-vehicle', views.updateVehicle , name='updateVehicle'),
   path('delete-vehicle', views.deleteVehicle , name='deleteVehicle'),
+
+  path('create-biker-log', views.createBikerLog , name='createBikerLog'),
+  path('get-detail-biker-log', views.getDetailBikerLog , name='getDetailBikerLog'),
+  path('get-report-biker-log-by-month', views.getReportBikerLogByMonth , name='getReportBikerLogByMonth'),
 ]

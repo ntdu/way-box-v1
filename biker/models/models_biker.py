@@ -1,6 +1,6 @@
 from django.db import models
-from django.contrib.auth.models import User
 from django.utils import timezone as tz
+from customer.models import *
 
 class Biker(models.Model):
     account = models.OneToOneField(User, on_delete=models.CASCADE)
@@ -21,3 +21,28 @@ class Biker(models.Model):
     
     def __str__(self):
         return self.first_name + self.last_name
+
+
+class BikerLog(models.Model):
+    biker = models.ForeignKey(User, on_delete=models.CASCADE, related_name="BikerLog_biker")
+    customer = models.ForeignKey(User, on_delete=models.CASCADE, related_name="BikerLog_customer")
+    origin_lng = models.DecimalField(default=0, max_digits=9, decimal_places=6) 
+    origin_lat = models.DecimalField(default=0, max_digits=9, decimal_places=6) 
+    destination_lng = models.DecimalField(default=0, max_digits=9, decimal_places=6) 
+    destination_lat = models.DecimalField(default=0, max_digits=9, decimal_places=6) 
+    address_origin = models.TextField() 
+    address_destination = models.TextField() 
+    
+    isRideConfirmed = models.BooleanField(default=False)
+    isRideCancelled = models.BooleanField(default=False)
+    _id = models.CharField(max_length=255, null=True, blank=True)
+    _v = models.CharField(max_length=255, null=True, blank=True)
+    price = models.IntegerField(default=0)
+    rideHash = models.TextField()
+    date = models.DateTimeField(default=tz.now)
+
+    created_date = models.DateTimeField(default=tz.now)
+    created_by = models.ForeignKey(User, on_delete=models.CASCADE, related_name="BikerLog_created_by")
+
+    def __str__(self):
+        return '{0} - {1}'.format(self.biker, self.date.strftime('%d/%m/%Y'))
