@@ -368,35 +368,40 @@ def getReportBikerLog(request):
         #             'total_cancelled': biker_log[0]['total_cancelled'] if biker_log else 0,
         #         })
         #         date_start_week = date_end_week + timedelta(days=1)
+        for single_date in daterange(from_month, to_month):
+            biker_log = BikerLog.objects.filter(date__date=single_date).values(
+                'created_date__year'
+            ).annotate(total_price=Sum('price'), total=Count('id'))
 
-        biker_log = BikerLog.objects.filter(date__gte=from_month, date__lte=to_month).values(
-            'created_date__year'
-        ).annotate(total_price=Sum('price'), total=Count('id'))
+            biker_log_cancelled = BikerLog.objects.filter(date__date=single_date, is_ride_cancelled=True).values(
+                'created_date__year'
+            ).annotate(total_price=Sum('price'), total_cancelled=Count('id'))
+            
+            if biker_log:
+                biker_log[0]['total_price'] -= biker_log_cancelled[0]['total_price'] if biker_log_cancelled else 0
+                biker_log[0]['total_confirmed'] = biker_log[0]['total'] 
+                biker_log[0]['total_confirmed'] -= biker_log_cancelled[0]['total_cancelled'] if biker_log_cancelled else 0
+                biker_log[0]['total_cancelled'] = biker_log_cancelled[0]['total_cancelled'] if biker_log_cancelled else 0
 
-        biker_log_cancelled = BikerLog.objects.filter(date__gte=from_month, date__lte=to_month, is_ride_cancelled=True).values(
-            'created_date__year'
-        ).annotate(total_price=Sum('price'), total_cancelled=Count('id'))
-        
-        if biker_log:
-            biker_log[0]['total_price'] -= biker_log_cancelled[0]['total_price'] if biker_log_cancelled else 0
-            biker_log[0]['total_confirmed'] = biker_log[0]['total'] 
-            biker_log[0]['total_confirmed'] -= biker_log_cancelled[0]['total_cancelled'] if biker_log_cancelled else 0
-            biker_log[0]['total_cancelled'] = biker_log_cancelled[0]['total_cancelled'] if biker_log_cancelled else 0
-
-        list_result.append({
-            'f_date': from_month.strftime("%Y-%m-%d"),
-            't_date': to_month.strftime("%Y-%m-%d"),
-            'amt': biker_log[0]['total_price'] if biker_log else 0,
-            # 'total': biker_log[0]['total'] if biker_log else 0,
-            'count_success': biker_log[0]['total_confirmed'] if biker_log else 0,
-            'count_cancel': biker_log[0]['total_cancelled'] if biker_log else 0,
-        })
+            list_result.append({
+                # 'f_date': from_month.strftime("%Y-%m-%d"),
+                # 't_date': to_month.strftime("%Y-%m-%d"),
+                'date': single_date.strftime("%Y-%m-%d"),
+                'amt': biker_log[0]['total_price'] if biker_log else 0,
+                # 'total': biker_log[0]['total'] if biker_log else 0,
+                'count_success': biker_log[0]['total_confirmed'] if biker_log else 0,
+                'count_cancel': biker_log[0]['total_cancelled'] if biker_log else 0,
+            })
 
         return ApiHelper.Response_ok(list(list_result))
     except Exception as e:
         print(e)
         return ApiHelper.Response_error()
 
+
+def daterange(start_date, end_date):
+    for n in range(int ((end_date - start_date).days + 1)):
+        yield start_date + timedelta(days=n)
 
 def monthrange(start_date, end_date):
     start_date = start_date.replace(day=1)
