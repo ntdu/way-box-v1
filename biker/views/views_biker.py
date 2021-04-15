@@ -273,7 +273,21 @@ def getDetailBikerLog(request):
 
         query = list(BikerLog.objects.filter(date__date=date).values(
             'biker__first_name',
+            'biker__last_name',
+            'biker__is_active',
+            'biker__female',
+            'biker__phone_number',
+            'biker__date_of_birth',
+            'biker__address',
+            'biker__email',
             'customer__first_name',
+            'customer__last_name',
+            'customer__is_active',
+            'customer__female',
+            'customer__phone_number',
+            'customer__date_of_birth',
+            'customer__address',
+            'customer__email',
             'origin_lng',
             'origin_lat',
             'destination_lng',
@@ -292,7 +306,22 @@ def getDetailBikerLog(request):
 
         for item in query:
             item['biker_first_name'] = item.pop('biker__first_name')
+            item['biker_is_active'] = item.pop('biker__is_active')
+            item['biker_last_name'] = item.pop('biker__last_name')
+            item['biker_gender'] = item.pop('biker__female')
+            item['biker_phone_number'] = item.pop('biker__phone_number')
+            item['biker_date_of_birth'] = item.pop('biker__date_of_birth')
+            item['biker_address'] = item.pop('biker__address')
+            item['biker_email'] = item.pop('biker__email')
+         
             item['customer_first_name'] = item.pop('customer__first_name')
+            item['customer_last_name'] = item.pop('customer__last_name')
+            item['customer_is_active'] = item.pop('customer__is_active')
+            item['customer_gender'] = item.pop('customer__female')
+            item['customer_phone_number'] = item.pop('customer__phone_number')
+            item['customer_date_of_birth'] = item.pop('customer__date_of_birth')
+            item['customer_address'] = item.pop('customer__address')
+            item['customer_email'] = item.pop('customer__email')
 
         return ApiHelper.Response_ok(query)
     except Exception as e:
