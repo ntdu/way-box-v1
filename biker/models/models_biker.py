@@ -33,12 +33,12 @@ class BikerLog(models.Model):
     address_origin = models.TextField() 
     address_destination = models.TextField() 
     
-    isRideConfirmed = models.BooleanField(default=False)
-    isRideCancelled = models.BooleanField(default=False)
+    is_ride_confirmed = models.BooleanField(default=False)
+    is_ride_cancelled = models.BooleanField(default=False)
     _id = models.CharField(max_length=255, null=True, blank=True)
     _v = models.CharField(max_length=255, null=True, blank=True)
     price = models.IntegerField(default=0)
-    rideHash = models.TextField()
+    ride_hash = models.TextField()
     date = models.DateTimeField(default=tz.now)
 
     created_date = models.DateTimeField(default=tz.now)

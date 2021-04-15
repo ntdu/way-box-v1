@@ -125,10 +125,10 @@ django_heroku.settings(locals())
 DATABASES = {
     'default': {
         'ENGINE': 'django.db.backends.postgresql_psycopg2',
-        'NAME': 'de2si9vvg0kq5k',
-        'USER': 'crywublpayeckr',
-        'PASSWORD': '832ccf157c62956da67989efc92a51a5b1b95120a5896cd5a3291ec18493df14',
-        'HOST': 'ec2-52-1-115-6.compute-1.amazonaws.com',
+        'NAME': 'd24n6auo4979ij',
+        'USER': 'jghjfgmkjoklly',
+        'PASSWORD': '76c2d254183a6b2274b5225421c44965cb2133ada207c0402607a6ed5dac4985',
+        'HOST': 'ec2-3-234-85-177.compute-1.amazonaws.com',
         'PORT': '5432'
     }
 }
