@@ -42,7 +42,7 @@ class BikerLog(models.Model):
     date = models.DateTimeField(default=tz.now)
 
     created_date = models.DateTimeField(default=tz.now)
-    created_by = models.ForeignKey(User, on_delete=models.CASCADE, related_name="BikerLog_created_by")
+    created_by = models.ForeignKey(User, null=True, blank=True, on_delete=models.CASCADE, related_name="BikerLog_created_by")
 
     def __str__(self):
         return '{0} - {1}'.format(self.biker, self.date.strftime('%d/%m/%Y'))
