@@ -20,5 +20,4 @@ urlpatterns = [
     path('test-connection', views.testConnection, name='testConnection'),
 
     path('create-biker-log', views.createBikerLog , name='createBikerLog'),
-    path('get-report-biker-log', views.getReportBikerLog , name='getReportBikerLog'),
 ]
