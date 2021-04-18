@@ -4,7 +4,7 @@ from django.utils import timezone as tz
 class User(models.Model):
     phone_number = models.CharField(max_length=15, primary_key=True)
     email = models.TextField(null=True, blank=True, unique=True)
-    password = models.TextField()
+    encoded_password = models.TextField()
     first_name = models.CharField(max_length=50)
     last_name = models.CharField(max_length=50)
     female = models.BooleanField()                                 
