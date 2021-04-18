@@ -200,7 +200,7 @@ def getDetailBikerLog(request):
         }
         r = requests.post('https://bikepicker-auth.herokuapp.com/verify-token', data=json.dumps(params), headers={'content-type': 'application/json'})
      
-        if (not r.text.isnumeric()): return ApiHelper.Response_ok(r.json()['message'])
+        if not "username" in r:return ApiHelper.Response_ok(r['message'])
 
         query = list(BikerLog.objects.filter(date__date=date).values(
             'biker__first_name',

@@ -82,7 +82,7 @@ def getUser(request):
         }
         r = requests.post('https://bikepicker-auth.herokuapp.com/verify-token', data=json.dumps(params), headers={'content-type': 'application/json'})
      
-        if (not r.text.isnumeric()): return ApiHelper.Response_ok(r.json()['message'])
+        if not "username" in r:return ApiHelper.Response_ok(r['message'])
         
         query = User.objects.filter(is_deleted=False, phone_number=r.text).values(
             'phone_number',
@@ -119,7 +119,7 @@ def updateUser(request):
         }
         r = requests.post('https://bikepicker-auth.herokuapp.com/verify-token', data=json.dumps(params), headers={'content-type': 'application/json'})
      
-        if (not r.text.isnumeric()): return ApiHelper.Response_ok(r.json()['message'])
+        if not "username" in r:return ApiHelper.Response_ok(r['message'])
 
         try:
             user_update = User.objects.filter(is_deleted=False, phone_number=r.text).first()
@@ -185,8 +185,9 @@ def getReportBikerLog(request):
             "token":token,
         }
         r = requests.post('https://bikepicker-auth.herokuapp.com/verify-token', data=json.dumps(params), headers={'content-type': 'application/json'})
-     
-        if (not r.text.isnumeric()): return ApiHelper.Response_ok(r.json()['message'])
+        r = r.json()
+
+        if not "username" in r:return ApiHelper.Response_ok(r['message'])
 
         list_result = []
         # if mode == 'month':
