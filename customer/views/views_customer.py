@@ -81,10 +81,10 @@ def getUser(request):
             "token":token,
         }
         r = requests.post('https://bikepicker-auth.herokuapp.com/verify-token', data=json.dumps(params), headers={'content-type': 'application/json'})
-     
+        r = r.json()
         if not "username" in r:return ApiHelper.Response_ok(r['message'])
         
-        query = User.objects.filter(is_deleted=False, phone_number=r.text).values(
+        query = User.objects.filter(is_deleted=False, phone_number=r["username"]).values(
             'phone_number',
             'email',
             'first_name',
@@ -118,11 +118,12 @@ def updateUser(request):
             "token":token,
         }
         r = requests.post('https://bikepicker-auth.herokuapp.com/verify-token', data=json.dumps(params), headers={'content-type': 'application/json'})
-     
+        r = r.json()
+
         if not "username" in r:return ApiHelper.Response_ok(r['message'])
 
         try:
-            user_update = User.objects.filter(is_deleted=False, phone_number=r.text).first()
+            user_update = User.objects.filter(is_deleted=False, phone_number=r["username"]).first()
             user_update.first_name = first_name
             user_update.last_name = last_name
             user_update.female = female
@@ -133,7 +134,7 @@ def updateUser(request):
  
             user_update.save()
         except Exception as e:
-            return ApiHelper.Response_client_error(e)
+            return ApiHelper.Response_client_error(str(e))
 
         return ApiHelper.Response_ok("Success")
     except Exception as e:

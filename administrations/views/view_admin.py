@@ -491,7 +491,7 @@ def createBikerLog(request):
             price = form['price']
             rideHash = form['rideHash']
             date = form['date']
-            print("ok")
+   
             # user_created = User.objects.filter(is_deleted=False, phone_number=r.text).first()
             biker = User.objects.filter(is_deleted=False, phone_number=biker).first()
             customer = User.objects.filter(is_deleted=False, phone_number=customer).first()
