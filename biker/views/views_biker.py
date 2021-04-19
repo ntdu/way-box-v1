@@ -203,7 +203,7 @@ def getDetailBikerLog(request):
         
         if not "username" in r:return ApiHelper.Response_ok(r['message'])
 
-        query = list(BikerLog.objects.filter(date__date=date).values(
+        query = list(BikerLog.objects.filter(date__date=date, biker=r['username']).values(
             'biker__first_name',
             'biker__last_name',
             'biker__is_active',
