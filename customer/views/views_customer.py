@@ -244,11 +244,11 @@ def getReportBikerLog(request):
         #         })
         #         date_start_week = date_end_week + timedelta(days=1)
         for single_date in daterange(from_month, to_month):
-            biker_log = BikerLog.objects.filter(date__date=single_date).values(
+            biker_log = BikerLog.objects.filter(date__date=single_date, biker=r['username']).values(
                 'created_date__year'
             ).annotate(total_price=Sum('price'), total=Count('id'))
 
-            biker_log_cancelled = BikerLog.objects.filter(date__date=single_date, is_ride_cancelled=True).values(
+            biker_log_cancelled = BikerLog.objects.filter(date__date=single_date, is_ride_cancelled=True, biker=r['username']).values(
                 'created_date__year'
             ).annotate(total_price=Sum('price'), total_cancelled=Count('id'))
             
