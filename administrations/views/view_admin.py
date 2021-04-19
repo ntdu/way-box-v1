@@ -496,6 +496,9 @@ def createBikerLog(request):
             biker = User.objects.filter(is_deleted=False, phone_number=biker).first()
             customer = User.objects.filter(is_deleted=False, phone_number=customer).first()
 
+            if not biker: return ApiHelper.Response_client_error("Không tìm thấy biker")
+            if not customer: return ApiHelper.Response_client_error("Không tìm thấy customer")
+            
             biker_log = BikerLog(
                 biker = biker,
                 customer = customer,
