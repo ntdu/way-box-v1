@@ -109,7 +109,6 @@ def updateUser(request):
         last_name = form['last_name'] 
         female = form['female'] if 'female' in form else None
         email = form['email']
-        password = form['password']
         date_of_birth = dt_class.strptime(form['date_of_birth'], '%Y-%m-%d') if 'date_of_birth' in form else None
         address = form['address'] if 'address' in form else None
 
@@ -128,7 +127,6 @@ def updateUser(request):
             user_update.last_name = last_name
             user_update.female = female
             user_update.email = email
-            user_update.password = password
             user_update.date_of_birth = date_of_birth
             user_update.address = address
  
