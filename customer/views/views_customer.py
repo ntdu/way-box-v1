@@ -107,10 +107,10 @@ def updateUser(request):
         
         first_name = form['first_name']
         last_name = form['last_name'] 
-        female = form['female'] if 'female' in form else None
+        female = form['female']
         email = form['email']
-        date_of_birth = dt_class.strptime(form['date_of_birth'], '%Y-%m-%d') if 'date_of_birth' in form else None
-        address = form['address'] if 'address' in form else None
+        date_of_birth = dt_class.strptime(form['date_of_birth'], '%Y-%m-%d')
+        address = form['address']
 
         token = form['token']
         params = {
