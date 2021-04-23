@@ -362,18 +362,12 @@ def updateCustomer(request):
 
 
 @api_view(['GET'])
+@authentication_classes([BasicAuthentication])
+@permission_classes([IsAuthenticated])
 def getUser(request):
     try:
-        token = request.GET.get("token")
-        params = {
-            "token":token,
-        }
-        r = requests.post('https://bikepicker-auth.herokuapp.com/verify-token', data=json.dumps(params), headers={'content-type': 'application/json'})
-     
-        if (not r.text.isnumeric()): return ApiHelper.Response_ok(r.json()['message'])
-        
-        query = User.objects.filter(is_deleted=False, phone_number=r.text).values(
-            'id',
+        phone_number = request.GET.get('phone')
+        query = User.objects.filter(is_deleted=False, phone_number=phone_number).values(
             'phone_number',
             'email',
             'first_name',
@@ -381,7 +375,8 @@ def getUser(request):
             'female',
             'date_of_birth',
             'address',
-            'is_active'
+            'is_active',
+            'created_date'
         )
         return ApiHelper.Response_ok(list(query))
     except Exception as e:
