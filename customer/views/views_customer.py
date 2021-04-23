@@ -13,6 +13,7 @@ from rest_framework.permissions import IsAuthenticated
 from django.views.decorators.csrf import csrf_exempt
 from django.db.models import Sum, Case, When, Count
 import requests
+import re
 
 from customer.models import *
 from biker.models import *
@@ -84,7 +85,7 @@ def getUser(request):
         r = r.json()
         if not "username" in r:return ApiHelper.Response_ok(r['message'])
         
-        query = User.objects.filter(is_deleted=False, phone_number=r["username"]).values(
+        query = list(User.objects.filter(is_deleted=False, phone_number=r["username"]).values(
             'phone_number',
             'email',
             'first_name',
@@ -92,9 +93,21 @@ def getUser(request):
             'female',
             'date_of_birth',
             'address',
-            'is_active'
-        )
-        return ApiHelper.Response_ok(list(query))
+            'is_active',
+            'created_date'
+        ))
+        
+        if query:
+            total_trip_biker = BikerLog.objects.filter(is_ride_confirmed=True, biker__phone_number=query[0]['phone_number']).count()
+            total_trip_customer = BikerLog.objects.filter(is_ride_confirmed=True, customer__phone_number=query[0]['phone_number']).count()
+        
+        context = {
+            "user_info": query[0] if query else None,
+            "total_trip_biker": total_trip_biker,
+            "total_trip_customer": total_trip_customer
+        }
+
+        return ApiHelper.Response_ok(context)
     except Exception as e:
         print(e)
         return ApiHelper.Response_error()
@@ -109,9 +122,7 @@ def updateUser(request):
         last_name = form['last_name'] 
         female = form['female']
         email = form['email']
-        date_of_birth = dt_class.strptime(form['date_of_birth'], '%Y-%m-%d')
         address = form['address']
-
         token = form['token']
         params = {
             "token":token,
@@ -119,7 +130,15 @@ def updateUser(request):
         r = requests.post('https://bikepicker-auth.herokuapp.com/verify-token', data=json.dumps(params), headers={'content-type': 'application/json'})
         r = r.json()
 
-        if not "username" in r:return ApiHelper.Response_ok(r['message'])
+        if not "username" in r: return ApiHelper.Response_ok(r['message'])
+        if not validate_email(email): return ApiHelper.Response_ok("Địa chỉ email không hợp lệ!")
+
+        try:
+            date_of_birth = dt_class.strptime(form['date_of_birth'], '%Y-%m-%d')
+        except Exception as e:
+            return ApiHelper.Response_client_error("Ngày sinh nhật không đúng định dạng!")
+
+        if not isinstance(female, (bool)): return ApiHelper.Response_client_error("Giới tính phải thuộc kiểu boolean!")
 
         try:
             user_update = User.objects.filter(is_deleted=False, phone_number=r["username"]).first()
@@ -164,6 +183,11 @@ def updatePassword(request):
         return ApiHelper.Response_error()
 
 
+def validate_email(email):
+    regex = '^(\w|\.|\_|\-)+[@](\w|\_|\-|\.)+[.]\w{2,3}$'
+    if(re.search(regex, email)): return True
+    return False
+
 # def createAccount(username, email, password):
 #     try:
 #         user = User.objects.create_user(username, email, password)
@@ -189,58 +213,7 @@ def getReportBikerLog(request):
         if not "username" in r:return ApiHelper.Response_ok(r['message'])
 
         list_result = []
-        # if mode == 'month':
-        #     for month in monthrange(from_month, to_month):
-        #         biker_log = BikerLog.objects.filter(date__month=month.month).values(
-        #             'created_date__month'
-        #         ).annotate(total_price=Sum('price'), total=Count('id'))
-
-        #         biker_log_cancelled = BikerLog.objects.filter(date__month=month.month, isRideCancelled=True).values(
-        #             'created_date__month'
-        #         ).annotate(total_price=Sum('price'), total_cancelled=Count('id'))
-                
-        #         if biker_log:
-        #             biker_log[0]['total_price'] -= biker_log_cancelled[0]['total_price'] if biker_log_cancelled else 0
-        #             biker_log[0]['total_confirmed'] = biker_log[0]['total'] 
-        #             biker_log[0]['total_confirmed'] -= biker_log_cancelled[0]['total_cancelled'] if biker_log_cancelled else 0
-        #             biker_log[0]['total_cancelled'] = biker_log_cancelled[0]['total_cancelled'] if biker_log_cancelled else 0
-
-        #         # total_distance: 1000
-        #         list_result.append({
-        #             'month': month.strftime("%m-%Y"),
-        #             'total_price': biker_log[0]['total_price'] if biker_log else 0,
-        #             'total': biker_log[0]['total'] if biker_log else 0,
-        #             'total_confirm': biker_log[0]['total_confirmed'] if biker_log else 0,
-        #             'total_cancelled': biker_log[0]['total_cancelled'] if biker_log else 0,
-        #         })
-        # elif mode == 'week':
-        #     date_start_week = from_month - timedelta(days=from_month.weekday())
-            
-        #     for i in range(4):
-        #         date_end_week = date_start_week + timedelta(days=6)
-        #         biker_log = BikerLog.objects.filter(date__gte=date_start_week, date__lte=date_end_week).values(
-        #             'created_date__year'
-        #         ).annotate(total_price=Sum('price'), total=Count('id'))
-
-        #         biker_log_cancelled = BikerLog.objects.filter(date__gte=date_start_week, date__lte=date_end_week, isRideCancelled=True).values(
-        #             'created_date__year'
-        #         ).annotate(total_price=Sum('price'), total_cancelled=Count('id'))
-                
-        #         if biker_log:
-        #             biker_log[0]['total_price'] -= biker_log_cancelled[0]['total_price'] if biker_log_cancelled else 0
-        #             biker_log[0]['total_confirmed'] = biker_log[0]['total'] 
-        #             biker_log[0]['total_confirmed'] -= biker_log_cancelled[0]['total_cancelled'] if biker_log_cancelled else 0
-        #             biker_log[0]['total_cancelled'] = biker_log_cancelled[0]['total_cancelled'] if biker_log_cancelled else 0
-
-        #         # total_distance: 1000
-        #         list_result.append({
-        #             'date_start_week': date_start_week.strftime("%d-%m-%Y"),
-        #             'total_price': biker_log[0]['total_price'] if biker_log else 0,
-        #             'total': biker_log[0]['total'] if biker_log else 0,
-        #             'total_confirm': biker_log[0]['total_confirmed'] if biker_log else 0,
-        #             'total_cancelled': biker_log[0]['total_cancelled'] if biker_log else 0,
-        #         })
-        #         date_start_week = date_end_week + timedelta(days=1)
+        
         for single_date in daterange(from_month, to_month):
             biker_log = BikerLog.objects.filter(date__date=single_date, biker=r['username']).values(
                 'created_date__year'
