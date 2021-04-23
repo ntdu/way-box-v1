@@ -14,6 +14,7 @@ from django.views.decorators.csrf import csrf_exempt
 from django.db.models import Sum, Case, When, Count
 import requests
 import re
+from cerberus import Validator
 
 from customer.models import *
 from biker.models import *
@@ -118,11 +119,30 @@ def updateUser(request):
     try:
         form =  ApiHelper.getData(request)
         
+        # validate input
+        schema = {
+            'email': {
+                'type': 'string',
+                'regex': '^[a-zA-Z0-9_.+-]+@[a-zA-Z0-9-]+\.[a-zA-Z0-9-.]+$'
+            },
+            'first_name': {'type': 'string'},
+            'last_name': {'type': 'string'},
+            'female': {'type': 'boolean'},
+            'token': {'type': 'string'},
+            'address': {'type': 'string'},
+            'date_of_birth': {'check_with': check_date_format}
+        }
+        
+        v = Validator(schema, require_all=True)
+        if not v.validate(form): return JsonResponse(v.errors)
+        # end validate
+        
         first_name = form['first_name']
         last_name = form['last_name'] 
         female = form['female']
         email = form['email']
         address = form['address']
+        date_of_birth = dt_class.strptime(form['date_of_birth'], '%Y-%m-%d')
         token = form['token']
         params = {
             "token":token,
@@ -131,14 +151,6 @@ def updateUser(request):
         r = r.json()
 
         if not "username" in r: return ApiHelper.Response_ok(r['message'])
-        if not validate_email(email): return ApiHelper.Response_ok("Địa chỉ email không hợp lệ!")
-
-        try:
-            date_of_birth = dt_class.strptime(form['date_of_birth'], '%Y-%m-%d')
-        except Exception as e:
-            return ApiHelper.Response_client_error("Ngày sinh nhật không đúng định dạng!")
-
-        if not isinstance(female, (bool)): return ApiHelper.Response_client_error("Giới tính phải thuộc kiểu boolean!")
 
         try:
             user_update = User.objects.filter(is_deleted=False, phone_number=r["username"]).first()
@@ -159,41 +171,10 @@ def updateUser(request):
         return ApiHelper.Response_error()
 
 
-@api_view(['POST'])
-def updatePassword(request):  
-    try:
-        form =  ApiHelper.getData(request)
-
-        token = form['token']
-        params = {
-            "token":token,
-        }
-        r = requests.post('https://bikepicker-auth.herokuapp.com/verify-token', data=json.dumps(params), headers={'content-type': 'application/json'})
-     
-        if (not r.text.isnumeric()): return ApiHelper.Response_ok(r.json()['message'])
-
-        password = form['password']
-        user_delete = User.objects.filter(is_deleted=False, phone_number=r.text).first()
-        user_delete.password = password
-        user_delete.save()
-
-        return ApiHelper.Response_ok("Success")
-    except Exception as e:
-        print(e)
-        return ApiHelper.Response_error()
-
-
 def validate_email(email):
     regex = '^(\w|\.|\_|\-)+[@](\w|\_|\-|\.)+[.]\w{2,3}$'
     if(re.search(regex, email)): return True
     return False
-
-# def createAccount(username, email, password):
-#     try:
-#         user = User.objects.create_user(username, email, password)
-#         return user
-#     except:
-#         return None
 
 
 @api_view(['GET'])
@@ -249,6 +230,7 @@ def daterange(start_date, end_date):
     for n in range(int ((end_date - start_date).days + 1)):
         yield start_date + timedelta(days=n)
 
+
 def monthrange(start_date, end_date):
     start_date = start_date.replace(day=1)
     end_date = end_date.replace(day=1)
@@ -258,3 +240,10 @@ def monthrange(start_date, end_date):
         r.append(date) 
         date = (date + timedelta(days=31)).replace(day=1)
     return r
+
+
+def check_date_format(field, value, error):
+    try:
+        dt_class.strptime(value, '%Y-%m-%d')
+    except Exception:
+        error(field, "Must be in the format YYYY-mm-dd")
