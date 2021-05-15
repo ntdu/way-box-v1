@@ -15,7 +15,7 @@ from django.views.decorators.csrf import csrf_exempt
 from django.db.models import Sum, Case, When, Count
 import requests
 from biker.models import *
-
+from django.db.models import Q
 from cerberus import Validator
 
 @csrf_exempt
@@ -204,7 +204,7 @@ def getDetailBikerLog(request):
         
         if not "username" in r:return ApiHelper.Response_ok(r['message'])
 
-        query = list(BikerLog.objects.filter(date__date=date, biker=r['username']).values(
+        query = list(BikerLog.objects.filter(Q(date__date=date), Q(biker=r['username']) | Q(customer=r['username'])).values(
             'biker__first_name',
             'biker__last_name',
             'biker__is_active',
