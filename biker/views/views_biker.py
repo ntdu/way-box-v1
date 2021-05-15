@@ -205,6 +205,7 @@ def getDetailBikerLog(request):
         if not "username" in r:return ApiHelper.Response_ok(r['message'])
 
         query = list(BikerLog.objects.filter(Q(date__date=date), Q(biker=r['username']) | Q(customer=r['username'])).values(
+            'id',
             'biker__first_name',
             'biker__last_name',
             'biker__is_active',
@@ -238,6 +239,13 @@ def getDetailBikerLog(request):
         ))
 
         for item in query:
+            review_of_biker = ReviewBikerLog.objects.filter(biker_log=item['id']).first()
+            item['star'] = ''
+            item['comment'] = ''
+            if review_of_biker:
+                item['star'] = review_of_biker.star
+                item['comment'] = review_of_biker.comment
+
             item['biker_first_name'] = item.pop('biker__first_name')
             item['biker_is_active'] = item.pop('biker__is_active')
             item['biker_last_name'] = item.pop('biker__last_name')

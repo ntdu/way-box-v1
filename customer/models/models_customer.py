@@ -16,3 +16,25 @@ class User(models.Model):
     
     def __str__(self):
         return self.first_name
+
+
+class CustomerPoint(models.Model):
+    user = models.ForeignKey(User, on_delete=models.CASCADE)
+    point = models.DecimalField(default=0, max_digits=9, decimal_places=2)                            
+    expired_date = models.DateField(null=True, blank=True)
+    is_deleted = models.BooleanField(default=False)
+    created_date = models.DateTimeField(default=tz.now)
+    
+    def __str__(self):
+        return '{0} - {1}'.format(self.user.first_name, self.point)
+
+
+class Level(models.Model):
+    code = models.CharField(null=True, blank=True, max_length=50)
+    name = models.CharField(null=True, blank=True, max_length=50)
+    point_condition = models.IntegerField()
+    point_accumulation = models.DecimalField(default=0, max_digits=9, decimal_places=2)
+    is_deleted = models.BooleanField(default=False)
+
+    def __str__(self):
+        return '{0} - {1}'.format(self.name, self.point_condition)

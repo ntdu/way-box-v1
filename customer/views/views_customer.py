@@ -15,6 +15,7 @@ from django.db.models import Sum, Case, When, Count
 import requests
 import re
 from cerberus import Validator
+from decimal import *
 
 from customer.models import *
 from biker.models import *
@@ -247,3 +248,37 @@ def check_date_format(field, value, error):
         dt_class.strptime(value, '%Y-%m-%d')
     except Exception:
         error(field, "Must be in the format YYYY-mm-dd")
+
+
+def accumulated_point(customer, money):
+    # tính số lượt đi trong tháng
+    date_from = dt_class.now().replace(day=1)
+
+    count_transaction = BikerLog.objects.filter(
+        customer = customer, 
+        created_date__gte = date_from
+    ).count()
+    
+    # xác định hạng thành viên
+    customer_level = Level.objects.filter(
+        point_condition__lte = count_transaction
+    ).order_by('-point_condition').first()
+
+    point = Decimal((money / 10000)) * customer_level.point_accumulation
+
+    customer_point = CustomerPoint.objects.filter(is_deleted=False, user=customer).first()
+
+    if not customer_point:
+        customer_point = CustomerPoint(
+            user = customer,
+            point = point,
+            expired_date = (dt_class.now().replace(day=1) + timedelta(days=124)).replace(day=1) - timedelta(days=1)
+        )
+        customer_point.save()
+
+    else:
+        customer_point.point += point
+        customer_point.expired_date = (dt_class.now().replace(day=1) + timedelta(days=124)).replace(day=1) - timedelta(days=1)
+        customer_point.save()
+    
+    return

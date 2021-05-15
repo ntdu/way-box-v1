@@ -14,6 +14,7 @@ from rest_framework.permissions import IsAuthenticated
 from django.views.decorators.csrf import csrf_exempt
 import requests
 from cerberus import Validator
+from customer.views import accumulated_point
 
 from biker.models import *
 from customer.models import *
@@ -548,6 +549,8 @@ def createBikerLog(request):
                 created_date = timezone.now()
             )
             biker_log.save()
+
+            accumulated_point(customer, price)
         except Exception as e:
             print(e)
             return ApiHelper.Response_client_error(e)
