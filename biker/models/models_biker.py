@@ -36,3 +36,13 @@ class BikerLog(models.Model):
 
     def __str__(self):
         return '{0} - {1}'.format(self.biker, self.date.strftime('%d/%m/%Y'))
+
+
+class ReviewBikerLog(models.Model):
+    biker_log = models.ForeignKey(BikerLog, on_delete=models.CASCADE)
+    star = models.DecimalField(default=0, max_digits=9, decimal_places=6) 
+    comment = models.TextField() 
+    created_date = models.DateTimeField(default=tz.now)
+
+    def __str__(self):
+        return '{0} - {1}'.format(self.biker_log.biker, self.created_date.strftime('%d/%m/%Y'))

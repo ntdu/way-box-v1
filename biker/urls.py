@@ -15,4 +15,5 @@ urlpatterns = [
   path('delete-vehicle', views.deleteVehicle , name='deleteVehicle'),
 
   path('get-detail-biker-log', views.getDetailBikerLog , name='getDetailBikerLog'),
+  path('create-review-trip', views.createReviewTrip , name='createReviewTrip'),
 ]

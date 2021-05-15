@@ -13,6 +13,7 @@ from rest_framework.authentication import BasicAuthentication
 from rest_framework.permissions import IsAuthenticated
 from django.views.decorators.csrf import csrf_exempt
 import requests
+from cerberus import Validator
 
 from biker.models import *
 from customer.models import *
@@ -364,6 +365,28 @@ def updateCustomer(request):
 @api_view(['GET'])
 @authentication_classes([BasicAuthentication])
 @permission_classes([IsAuthenticated])
+def listUser(request):
+    try:
+        query = User.objects.filter(is_deleted=False).order_by("-created_date").values(
+            'phone_number',
+            'email',
+            'first_name',
+            'last_name',
+            'female',
+            'date_of_birth',
+            'address',
+            'is_active',
+            'created_date'
+        )
+        return ApiHelper.Response_ok(list(query))
+    except Exception as e:
+        print(e)
+        return ApiHelper.Response_error()
+
+
+@api_view(['GET'])
+@authentication_classes([BasicAuthentication])
+@permission_classes([IsAuthenticated])
 def getUser(request):
     try:
         phone_number = request.GET.get('phone')
@@ -384,52 +407,62 @@ def getUser(request):
         return ApiHelper.Response_error()
 
 
-@api_view(['GET'])
+@api_view(['POST'])
 @authentication_classes([BasicAuthentication])
 @permission_classes([IsAuthenticated])
-def getBiker(request):
+def createUser(request):
     try:
-        id = request.GET.get('id')
-        query = Biker.objects.filter(is_deleted=False, id=id).values(
-            'id',
-            'account__username',
-            'first_name',
-            'last_name',
-            'is_active',
-            'gender',
-            'phone_number',
-            'date_of_birth',
-            'address'
-        )
+        form = ApiHelper.getData(request)
 
-        return ApiHelper.Response_ok(list(query))
+        # validate input
+        schema = {
+            'email': {
+                'type': 'string',
+                'regex': '^[a-zA-Z0-9_.+-]+@[a-zA-Z0-9-]+\.[a-zA-Z0-9-.]+$'
+            },
+            'first_name': {'type': 'string'},
+            'last_name': {'type': 'string'},
+            # 'female': {'type': 'boolean'}, #what?
+            'phone_number': {
+                'type': 'string',
+                'regex': '^[0-9]+$'
+            },
+            'address': {'type': 'string'},
+            'password': {'type': 'string'},
+            'date_of_birth': {'check_with': check_date_format}
+        }
+
+        v = Validator(schema, require_all=True, allow_unknown=True)
+        if not v.validate(form): return JsonResponse(v.errors)
+        # end validate
+
+        # create User
+        params = {
+            "firstName": form['first_name'],
+            "lastName": form['last_name'],
+            "female": form['female'],
+            "email": form['email'],
+            "address": form['address'],
+            "password": form['password'],
+            "phoneNumber": form['phone_number'],
+            "dateOfBirth": form['date_of_birth']
+        }
+        r = requests.post('https://bikepicker-auth.herokuapp.com/register', data=json.dumps(params), headers={'content-type': 'application/json'})
+        r = r.json()
+
+        if "otpToken" in r: return ApiHelper.Response_ok("Success")
+
+        return ApiHelper.Response_client_error(r["message"])
     except Exception as e:
         print(e)
         return ApiHelper.Response_error()
 
 
-@api_view(['GET'])
-@authentication_classes([BasicAuthentication])
-@permission_classes([IsAuthenticated])
-def getCustomer(request):
+def check_date_format(field, value, error):
     try:
-        id = request.GET.get('id')
-        query = Customer.objects.filter(is_deleted=False, id=id).values(
-            'id',
-            'account__username',
-            'first_name',
-            'last_name',
-            'is_active',
-            'gender',
-            'phone_number',
-            'date_of_birth',
-            'address'
-        )
-
-        return ApiHelper.Response_ok(list(query))
-    except Exception as e:
-        print(e)
-        return ApiHelper.Response_error()
+        dt_class.strptime(value, '%Y-%m-%d')
+    except Exception:
+        error(field, "Must be in the format YYYY-mm-dd")
 
 
 from django.db import connections
@@ -519,7 +552,7 @@ def createBikerLog(request):
             print(e)
             return ApiHelper.Response_client_error(e)
 
-        return ApiHelper.Response_ok("Success")
+        return ApiHelper.Response_ok(biker_log.id)
     except Exception as e:
         print(e)
         return ApiHelper.Response_error()

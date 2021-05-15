@@ -14,10 +14,11 @@ urlpatterns = [
     path('delete-biker', views.deleteBiker, name='deleteBiker'),
     path('update-biker', views.updateBiker, name='updateBiker'),
     path('update-customerr', views.updateCustomer, name='updateCustomer'),
-    path('get-biker', views.getBiker, name='getBiker'),
-    path('get-customer', views.getCustomer, name='getCustomer'),
-    path('get-user', views.getUser, name='getUser'),
+   
     path('test-connection', views.testConnection, name='testConnection'),
-
+    
     path('create-biker-log', views.createBikerLog , name='createBikerLog'),
+    path('list-user', views.listUser, name='listUser'),
+    path('get-user', views.getUser, name='getUser'),
+    path('create-user', views.createUser, name='createUser'),
 ]

@@ -16,6 +16,7 @@ from django.db.models import Sum, Case, When, Count
 import requests
 from biker.models import *
 
+from cerberus import Validator
 
 @csrf_exempt
 def createBiker(request):  
@@ -260,3 +261,54 @@ def getDetailBikerLog(request):
         print(e)
         return ApiHelper.Response_error()
 
+
+@api_view(['POST'])
+def createReviewTrip(request):  
+    try:
+        form =  ApiHelper.getData(request)
+        
+        # validate input
+        schema = {
+            'biker_log_id': {'type': 'number'},
+            'star': {'type': 'number'},
+            'token': {'type': 'string'},
+            'comment': {'type': 'string'},
+        }
+        
+        v = Validator(schema, require_all=True)
+        if not v.validate(form): return JsonResponse(v.errors)
+        # end validate
+        
+        biker_log_id = form['biker_log_id']
+        star = form['star'] 
+        comment = form['comment']
+        
+        token = form['token']
+        params = {
+            "token":token,
+        }
+        r = requests.post('https://bikepicker-auth.herokuapp.com/verify-token', data=json.dumps(params), headers={'content-type': 'application/json'})
+        r = r.json()
+
+        if not "username" in r: return ApiHelper.Response_ok(r['message'])
+
+        try:
+            biker_log = BikerLog.objects.filter(id=biker_log_id).first()
+
+            if not biker_log:
+                return ApiHelper.Response_ok("Không tìm thấy BikerLog")
+
+            review_biker_log = ReviewBikerLog(
+                biker_log = biker_log,
+                star = star,
+                comment = comment
+            )
+            review_biker_log.save()
+
+        except Exception as e:
+            return ApiHelper.Response_client_error(str(e))
+
+        return ApiHelper.Response_ok("Success")
+    except Exception as e:
+        print(e)
+        return ApiHelper.Response_error()
