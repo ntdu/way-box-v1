@@ -282,3 +282,26 @@ def accumulated_point(customer, money):
         customer_point.save()
     
     return
+
+
+def getPointCustomer(request):
+    try:
+        token = request.GET.get('token')
+
+        params = {
+            "token":token,
+        }
+        r = requests.post('https://bikepicker-auth.herokuapp.com/verify-token', data=json.dumps(params), headers={'content-type': 'application/json'})
+        r = r.json()
+
+        if not "username" in r:return ApiHelper.Response_ok(r['message'])
+
+        query = list(CustomerPoint.objects.filter(user=r['username']).values(
+            'point',
+            'expired_date'
+        ))
+
+        return ApiHelper.Response_ok(query)
+    except Exception as e:
+        print(e)
+        return ApiHelper.Response_error()
