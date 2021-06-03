@@ -80,10 +80,14 @@ def createCustomer(request):
 def getUser(request):
     try:
         token = request.GET.get("token")
+
+        if not 'User-Agent' in request.headers: ApiHelper.Response_ok("Thiếu User-Agent")
+        user_agent = request.headers['User-Agent']
+
         params = {
-            "token":token,
+            "token": token
         }
-        r = requests.post('https://bikepicker-auth.herokuapp.com/verify-token', data=json.dumps(params), headers={'content-type': 'application/json'})
+        r = requests.post('https://bikepicker-auth.herokuapp.com/verify-token', data=json.dumps(params), headers={'content-type': 'application/json', 'User-Agent': user_agent})
         r = r.json()
         if not "username" in r:return ApiHelper.Response_ok(r['message'])
         
@@ -119,7 +123,9 @@ def getUser(request):
 def updateUser(request):  
     try:
         form =  ApiHelper.getData(request)
-        
+
+        if not 'User-Agent' in request.headers: ApiHelper.Response_ok("Thiếu User-Agent")
+        user_agent = request.headers['User-Agent']
         # validate input
         schema = {
             'email': {
@@ -148,7 +154,7 @@ def updateUser(request):
         params = {
             "token":token,
         }
-        r = requests.post('https://bikepicker-auth.herokuapp.com/verify-token', data=json.dumps(params), headers={'content-type': 'application/json'})
+        r = requests.post('https://bikepicker-auth.herokuapp.com/verify-token', data=json.dumps(params), headers={'content-type': 'application/json', 'User-Agent': user_agent})
         r = r.json()
 
         if not "username" in r: return ApiHelper.Response_ok(r['message'])
@@ -182,6 +188,10 @@ def validate_email(email):
 def getReportBikerLog(request):
     try:
         token = request.GET.get('token')
+
+        if not 'User-Agent' in request.headers: ApiHelper.Response_ok("Thiếu User-Agent")
+        user_agent = request.headers['User-Agent']
+
         to_month = dt_class.strptime(request.GET.get('t_date'), '%Y-%m-%d')
         from_month = dt_class.strptime(request.GET.get('f_date'), '%Y-%m-%d')
         # mode = request.GET.get('mode')
@@ -189,7 +199,7 @@ def getReportBikerLog(request):
         params = {
             "token":token,
         }
-        r = requests.post('https://bikepicker-auth.herokuapp.com/verify-token', data=json.dumps(params), headers={'content-type': 'application/json'})
+        r = requests.post('https://bikepicker-auth.herokuapp.com/verify-token', data=json.dumps(params), headers={'content-type': 'application/json', 'User-Agent': user_agent})
         r = r.json()
 
         if not "username" in r:return ApiHelper.Response_ok(r['message'])
@@ -288,10 +298,13 @@ def getPointCustomer(request):
     try:
         token = request.GET.get('token')
 
+        if not 'User-Agent' in request.headers: ApiHelper.Response_ok("Thiếu User-Agent")
+        user_agent = request.headers['User-Agent']
+
         params = {
             "token":token,
         }
-        r = requests.post('https://bikepicker-auth.herokuapp.com/verify-token', data=json.dumps(params), headers={'content-type': 'application/json'})
+        r = requests.post('https://bikepicker-auth.herokuapp.com/verify-token', data=json.dumps(params), headers={'content-type': 'application/json', 'User-Agent': user_agent})
         r = r.json()
 
         if not "username" in r:return ApiHelper.Response_ok(r['message'])
