@@ -284,7 +284,7 @@ def createReviewTrip(request):
 
         # validate input
         schema = {
-            'biker_log_id': {'type': 'number'},
+            'rideHash': {'type': 'string'},
             'star': {'type': 'number'},
             'token': {'type': 'string'},
             'comment': {'type': 'string'},
@@ -294,7 +294,7 @@ def createReviewTrip(request):
         if not v.validate(form): return JsonResponse(v.errors)
         # end validate
         
-        biker_log_id = form['biker_log_id']
+        rideHash = form['rideHash']
         star = form['star'] 
         comment = form['comment']
         
@@ -308,7 +308,7 @@ def createReviewTrip(request):
         if not "username" in r: return ApiHelper.Response_ok(r['message'])
 
         try:
-            biker_log = BikerLog.objects.filter(id=biker_log_id).first()
+            biker_log = BikerLog.objects.filter(ride_hash=rideHash).first()
 
             if not biker_log:
                 return ApiHelper.Response_ok("Không tìm thấy BikerLog")
