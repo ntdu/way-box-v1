@@ -195,20 +195,22 @@ def getDetailBikerLog(request):
     try:
         token = request.GET.get('token')
 
-        if not 'User-Agent' in request.headers: ApiHelper.Response_ok("Thiếu User-Agent")
-        user_agent = request.headers['User-Agent']
+        if not 'UID' in request.headers: return ApiHelper.Response_ok("Thiếu UID")
+        UID = request.headers['UID']
 
         date = dt_class.strptime(request.GET.get('date'), '%Y-%m-%d')
 
         params = {
             "token":token,
         }
-        r = requests.post('https://bikepicker-auth.herokuapp.com/verify-token', data=json.dumps(params), headers={'content-type': 'application/json', 'User-Agent': user_agent})
+        r = requests.post('https://bike-auth.herokuapp.com/verify-token', data=json.dumps(params), headers={'content-type': 'application/json', 'UID': UID})
         r = r.json()
         
-        if not "username" in r:return ApiHelper.Response_ok(r['message'])
+        if r["error"] != 0: return ApiHelper.Response_ok(r['message'])
 
-        query = list(BikerLog.objects.filter(Q(date__date=date), Q(biker=r['username']) | Q(customer=r['username'])).values(
+        phone_number = r['data']['username']
+
+        query = list(BikerLog.objects.filter(Q(date__date=date), Q(biker=phone_number) | Q(customer=phone_number)).values(
             'id',
             'biker__first_name',
             'biker__last_name',
@@ -279,8 +281,8 @@ def createReviewTrip(request):
     try:
         form =  ApiHelper.getData(request)
         
-        if not 'User-Agent' in request.headers: ApiHelper.Response_ok("Thiếu User-Agent")
-        user_agent = request.headers['User-Agent']
+        if not 'UID' in request.headers: return ApiHelper.Response_ok("Thiếu UID")
+        UID = request.headers['UID']
 
         # validate input
         schema = {
@@ -302,10 +304,11 @@ def createReviewTrip(request):
         params = {
             "token":token,
         }
-        r = requests.post('https://bikepicker-auth.herokuapp.com/verify-token', data=json.dumps(params), headers={'content-type': 'application/json', 'User-Agent': user_agent})
+        
+        r = requests.post('https://bike-auth.herokuapp.com/verify-token', data=json.dumps(params), headers={'content-type': 'application/json', 'UID': UID})
         r = r.json()
 
-        if not "username" in r: return ApiHelper.Response_ok(r['message'])
+        if r["error"] != 0: return ApiHelper.Response_ok(r['message'])
 
         try:
             biker_log = BikerLog.objects.filter(ride_hash=rideHash).first()

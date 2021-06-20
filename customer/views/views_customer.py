@@ -81,17 +81,20 @@ def getUser(request):
     try:
         token = request.GET.get("token")
 
-        if not 'User-Agent' in request.headers: ApiHelper.Response_ok("Thiếu User-Agent")
-        user_agent = request.headers['User-Agent']
+        if not 'UID' in request.headers: return ApiHelper.Response_ok("Thiếu UID")
+        UID = request.headers['UID']
 
         params = {
             "token": token
         }
-        r = requests.post('https://bikepicker-auth.herokuapp.com/verify-token', data=json.dumps(params), headers={'content-type': 'application/json', 'User-Agent': user_agent})
+        r = requests.post('https://bike-auth.herokuapp.com/verify-token', data=json.dumps(params), headers={'content-type': 'application/json', 'UID': UID})
         r = r.json()
-        if not "username" in r:return ApiHelper.Response_ok(r['message'])
+
+        if r["error"] != 0: return ApiHelper.Response_ok(r['message'])
+
+        phone_number = r['data']['username']
         
-        query = list(User.objects.filter(is_deleted=False, phone_number=r["username"]).values(
+        query = list(User.objects.filter(is_deleted=False, phone_number=phone_number).values(
             'phone_number',
             'email',
             'first_name',
@@ -124,8 +127,9 @@ def updateUser(request):
     try:
         form =  ApiHelper.getData(request)
 
-        if not 'User-Agent' in request.headers: ApiHelper.Response_ok("Thiếu User-Agent")
-        user_agent = request.headers['User-Agent']
+        if not 'UID' in request.headers: return ApiHelper.Response_ok("Thiếu UID")
+        UID = request.headers['UID']
+
         # validate input
         schema = {
             'email': {
@@ -154,13 +158,16 @@ def updateUser(request):
         params = {
             "token":token,
         }
-        r = requests.post('https://bikepicker-auth.herokuapp.com/verify-token', data=json.dumps(params), headers={'content-type': 'application/json', 'User-Agent': user_agent})
+
+        r = requests.post('https://bike-auth.herokuapp.com/verify-token', data=json.dumps(params), headers={'content-type': 'application/json', 'UID': UID})
         r = r.json()
 
-        if not "username" in r: return ApiHelper.Response_ok(r['message'])
+        if r["error"] != 0: return ApiHelper.Response_ok(r['message'])
+
+        phone_number = r['data']['username']
 
         try:
-            user_update = User.objects.filter(is_deleted=False, phone_number=r["username"]).first()
+            user_update = User.objects.filter(is_deleted=False, phone_number=phone_number).first()
             user_update.first_name = first_name
             user_update.last_name = last_name
             user_update.female = female
@@ -189,8 +196,8 @@ def getReportBikerLog(request):
     try:
         token = request.GET.get('token')
 
-        if not 'User-Agent' in request.headers: ApiHelper.Response_ok("Thiếu User-Agent")
-        user_agent = request.headers['User-Agent']
+        if not 'UID' in request.headers: return ApiHelper.Response_ok("Thiếu UID")
+        UID = request.headers['UID']
 
         to_month = dt_class.strptime(request.GET.get('t_date'), '%Y-%m-%d')
         from_month = dt_class.strptime(request.GET.get('f_date'), '%Y-%m-%d')
@@ -199,19 +206,21 @@ def getReportBikerLog(request):
         params = {
             "token":token,
         }
-        r = requests.post('https://bikepicker-auth.herokuapp.com/verify-token', data=json.dumps(params), headers={'content-type': 'application/json', 'User-Agent': user_agent})
+        r = requests.post('https://bike-auth.herokuapp.com/verify-token', data=json.dumps(params), headers={'content-type': 'application/json', 'UID': UID})
         r = r.json()
 
-        if not "username" in r:return ApiHelper.Response_ok(r['message'])
+        if r["error"] != 0: return ApiHelper.Response_ok(r['message'])
+
+        phone_number = r['data']['username']
 
         list_result = []
         
         for single_date in daterange(from_month, to_month):
-            biker_log = BikerLog.objects.filter(date__date=single_date, biker=r['username']).values(
+            biker_log = BikerLog.objects.filter(date__date=single_date, biker=phone_number).values(
                 'created_date__year'
             ).annotate(total_price=Sum('price'), total=Count('id'))
 
-            biker_log_cancelled = BikerLog.objects.filter(date__date=single_date, is_ride_cancelled=True, biker=r['username']).values(
+            biker_log_cancelled = BikerLog.objects.filter(date__date=single_date, is_ride_cancelled=True, biker=phone_number).values(
                 'created_date__year'
             ).annotate(total_price=Sum('price'), total_cancelled=Count('id'))
             
@@ -298,18 +307,21 @@ def getPointCustomer(request):
     try:
         token = request.GET.get('token')
 
-        if not 'User-Agent' in request.headers: ApiHelper.Response_ok("Thiếu User-Agent")
-        user_agent = request.headers['User-Agent']
+        if not 'UID' in request.headers: return ApiHelper.Response_ok("Thiếu UID")
+        UID = request.headers['UID']
 
         params = {
             "token":token,
         }
-        r = requests.post('https://bikepicker-auth.herokuapp.com/verify-token', data=json.dumps(params), headers={'content-type': 'application/json', 'User-Agent': user_agent})
+        
+        r = requests.post('https://bike-auth.herokuapp.com/verify-token', data=json.dumps(params), headers={'content-type': 'application/json', 'UID': UID})
         r = r.json()
+        
+        if r["error"] != 0: return ApiHelper.Response_ok(r['message'])
 
-        if not "username" in r:return ApiHelper.Response_ok(r['message'])
+        phone_number = r['data']['username']
 
-        query = list(CustomerPoint.objects.filter(user=r['username']).values(
+        query = list(CustomerPoint.objects.filter(user=phone_number).values(
             'point',
             'expired_date'
         ))
